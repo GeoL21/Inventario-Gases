@@ -238,6 +238,53 @@ textarea.inp{min-height:72px;resize:vertical}
 @keyframes sube{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
 @keyframes aparece{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* PC: pantalla completa (desde 1024 px) */
+@media (min-width:1024px){
+  #app{max-width:none}
+  body:has(.nav) #app{padding-left:220px}
+  .nav{top:0;bottom:0;right:auto;width:220px;border-top:0;border-right:1px solid var(--linea);padding:16px 12px}
+  .nav .in{max-width:none;flex-direction:column;gap:4px}
+  .tab{flex:none;flex-direction:row;justify-content:flex-start;gap:12px;min-height:50px;padding:0 14px;border-radius:12px;font-size:15px}
+  .tab:hover{background:var(--vino-suave)}
+  .tab[aria-current="page"]{background:var(--vino-suave);color:var(--vino);box-shadow:inset 4px 0 0 var(--vino)}
+  .tab:has(.mas){order:-1;background:var(--vino);color:#fff;font-weight:800;margin-bottom:12px;justify-content:center}
+  .tab:has(.mas):hover{background:var(--vino-osc)}
+  .tab .mas{width:auto;height:auto;margin:0;background:none;box-shadow:none;color:inherit}
+  .tab .badge{position:static;margin-left:auto}
+  .cab{padding:14px 28px;flex-direction:row;align-items:center;gap:20px}
+  .cab>.fila,.cab>.tit{flex:1;min-width:0}
+  .cab .buscar{width:min(480px,40%);flex:none}
+  .franja{padding:8px 28px}
+  .cuerpo{padding:22px 28px 40px}
+  .cuerpo.con-barra{padding-bottom:110px}
+  .chips{margin:0;padding:0;flex-wrap:wrap;overflow:visible}
+  .resumen{grid-template-columns:repeat(3,minmax(0,260px))}
+  .lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px;align-items:start}
+  .seccion,.fecha-sec,.lista>.vacio{grid-column:1/-1}
+  .seccion{margin:10px 2px 0}.fecha-sec{margin:10px 2px 0}
+  .art:hover,.hist:hover,.cifra:hover{border-color:var(--vino)}
+  .chip:hover,.opcion:hover{border-color:var(--vino)}
+  /* Detalle del artículo: foto y datos a la izquierda, movimientos a la derecha */
+  .cuerpo:has(>.foto-grande){display:grid;grid-template-columns:minmax(340px,460px) minmax(0,1fr);gap:14px 24px;align-items:start}
+  .cuerpo:has(>.foto-grande)>*{grid-column:1}
+  .cuerpo:has(>.foto-grande)>.movs{grid-column:2;grid-row:1/span 10}
+  .foto-grande{height:300px}
+  /* Nuevo movimiento: datos a la izquierda, artículos a la derecha */
+  .cuerpo:has(>.items){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 24px;align-items:start}
+  .cuerpo:has(>.items)>*{grid-column:1}
+  .cuerpo:has(>.items)>.items{grid-column:2;grid-row:1/span 20}
+  .dos{grid-template-columns:200px minmax(0,1fr)}
+  .barra-inf{padding:12px 28px 14px}
+  .barra-inf .in{max-width:none;display:flex;justify-content:flex-end}
+  .barra-inf .btn{min-width:240px}
+  body:has(.nav) .barra-inf{left:220px}
+  /* Hojas como ventana centrada */
+  .velo{align-items:center;padding:24px}
+  .hoja{border-radius:20px;max-height:86vh}
+  .hoja .agarre{display:none}
+  .toast{bottom:24px}
+}
 </style>
 </head>
 <body>
