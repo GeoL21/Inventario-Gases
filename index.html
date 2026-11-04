@@ -206,8 +206,8 @@ textarea.inp{min-height:72px;resize:vertical}
 .hist.anulado .d{text-decoration:line-through;color:var(--suave)}
 
 /* Hoja inferior (modales) */
-.velo{position:fixed;inset:0;z-index:20;background:rgba(31,20,25,.45);display:flex;align-items:flex-end;justify-content:center;animation:aparece .18s ease-out}
-.hoja{background:#fff;width:100%;max-width:640px;max-height:88dvh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;animation:sube .22s ease-out;padding-bottom:env(safe-area-inset-bottom)}
+.velo{position:fixed;inset:0;z-index:20;background:rgba(31,20,25,.45);display:flex;align-items:flex-end;justify-content:center;animation:aparece .18s var(--ease-out)}
+.hoja{background:#fff;width:100%;max-width:640px;max-height:88dvh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;animation:sube .22s var(--ease-out);padding-bottom:env(safe-area-inset-bottom)}
 .hoja .agarre{width:40px;height:4px;border-radius:4px;background:#D9CCD1;margin:8px auto 0}
 .hoja .h-cab{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 16px;border-bottom:1px solid var(--linea-suave)}
 .hoja .h-cab h2{flex:1;font-size:17px;font-weight:800}
@@ -233,7 +233,7 @@ textarea.inp{min-height:72px;resize:vertical}
 .acceso h1{font-size:22px;font-weight:800}
 
 /* Aviso flotante */
-.toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:40;max-width:560px;margin:0 auto;background:#1F2937;color:#fff;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:600;display:flex;gap:10px;align-items:center;animation:sube .2s ease-out}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:40;max-width:560px;margin:0 auto;background:#1F2937;color:#fff;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:600;display:flex;gap:10px;align-items:center;animation:sube .2s var(--ease-out)}
 
 @keyframes sube{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
 @keyframes aparece{from{opacity:0}to{opacity:1}}
@@ -285,6 +285,14 @@ textarea.inp{min-height:72px;resize:vertical}
   .hoja .agarre{display:none}
   .toast{bottom:24px}
 }
+
+/* ---------- Movimiento (skill motion) ---------- */
+/* Botones: se encogen un poco al tocarlos (150 ms) para que se note la respuesta */
+:root{--ease-out:cubic-bezier(0.23,1,0.32,1)}
+button,.btn{transition:transform 150ms var(--ease-out)}
+button:active:not(:disabled),.btn:active{transform:scale(.98)}
+/* Con "reducir movimiento" activado en el teléfono: sin escalas */
+@media (prefers-reduced-motion:reduce){button:active:not(:disabled),.btn:active{transform:none!important}}
 </style>
 </head>
 <body>

@@ -8,6 +8,9 @@
 
 'use strict';
 
+// Desplazamiento suave, salvo que el teléfono tenga activado "reducir movimiento"
+const DESPLAZA = (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth';
+
 /***********************
  * UTILIDADES
  ***********************/
@@ -860,7 +863,7 @@ function guardarMov() {
     f.intentado = true;
     repintarMov();
     const primero = document.querySelector('.error:not(:empty)');
-    if (primero) primero.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    if (primero) primero.scrollIntoView({ block: 'center', behavior: DESPLAZA });
     return;
   }
   let obs = f.obs.trim();
