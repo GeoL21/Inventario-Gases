@@ -9,7 +9,7 @@
  * VERSION para que los celulares renueven la copia.
  *****************************************************************/
 
-const VERSION = 'inv-gases-v4';
+const VERSION = 'inv-gases-v5';
 
 const ARCHIVOS = [
   './',
