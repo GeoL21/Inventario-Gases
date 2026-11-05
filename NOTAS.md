@@ -8,8 +8,9 @@ mangueras) en Clínica Reina Catalina, con el destino de cada movimiento.
 - Código de la PWA: este repo, publicado en GitHub Pages.
 - Datos: hoja de Google nueva, hecha para esta app (cuenta cilindrocrc@gmail.com).
   Existe otra hoja anterior, "Inventario - Gases medicinales"; se decidió NO usarla.
-- Servidor: implementación de Apps Script de esa hoja. Su código NO está en este repo.
-  La URL del servidor está en `config.js`.
+- Servidor: implementación de Apps Script de esa hoja. Su código NO está en este repo
+  (el usuario lo pega aquí cuando hay que revisarlo).
+  La URL del servidor está en `config.js`: la app la necesita y está protegida por el código de acceso.
 
 ## Reglas que no se cambian
 - Un solo almacén: todo sale de Barranquilla. Baranoa es solo un destino.
@@ -25,4 +26,7 @@ mangueras) en Clínica Reina Catalina, con el destino de cada movimiento.
 - Preguntar antes de cambiar algo y mostrar un bosquejo para aprobar.
 - No romper la hoja ni los registros existentes.
 - Al cambiar archivos, subir el número de `VERSION` en `sw.js`.
-- Este repo es público: no escribir aquí códigos de acceso, claves ni URLs del servidor.
+- Este repo es público: no escribir aquí códigos de acceso ni claves (la URL de `config.js` sí va).
+- Datos del celular con prefijo propio (`ig_`) porque todas las apps de geol21.github.io comparten almacenamiento.
+- Las miniaturas se piden solo si cambiaron (`fotosDesde` / `fotosParciales`) para no gastar datos.
+- Diseño: encabezado blanco sin franja vino, logo en el menú lateral en PC, vino #6A1B3A (igual que Tanques).

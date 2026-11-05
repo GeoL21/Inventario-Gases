@@ -401,9 +401,18 @@ function render() {
     articulo: function() { return vArticulo(p.ruta[1]); }
   }[vista];
   $('vista').innerHTML = html ? html() : vInventario();
+  tituloVentana(vista);
   pintarNav(vista);
   pintarFranja();
   if (vista === 'inventario') pintarListaArt();
+}
+
+/** Título de la ventana: en la app instalada solo la sección (el sistema ya antepone el nombre de la app). */
+function tituloVentana(vista) {
+  const n = { inventario: 'Inventario', item: 'Artículo', mov: 'Movimiento', pendientes: 'Pendientes',
+    historial: 'Historial', minimos: 'Stock mínimo', articulo: 'Artículo' }[vista] || 'Inventario';
+  const app = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  document.title = app ? n : 'Inventario Gases · ' + n;
 }
 
 function pintarNav(vista) {
@@ -413,12 +422,13 @@ function pintarNav(vista) {
     return '<button class="tab" data-a="tab" data-x="' + ruta + '"' +
       (vista === clave ? ' aria-current="page"' : '') + '>' + ico(icono) + texto + (extra || '') + '</button>';
   }
-  $('capaNav').innerHTML = '<nav class="nav" aria-label="Secciones"><div class="in">' +
+  $('capaNav').innerHTML = '<nav class="nav" aria-label="Secciones">' +
+    '<div class="marca"><img src="logo.jpg" alt=""><b>Inventario<br>Gases Medicinales</b></div><div class="in">' +
     tab('inventario', '#/inventario', 'caja', 'Inventario') +
     '<button class="tab" data-a="ir" data-x="#/mov"><span class="mas">' + ico('mas') + '</span>Movimiento</button>' +
     tab('pendientes', '#/pendientes', 'reloj', 'Pendientes', pend ? '<span class="badge">' + pend + '</span>' : '') +
     tab('historial', '#/historial', 'lista', 'Historial') +
-    '</div></nav>';
+    '</div><div class="pie-nav">Clínica Reina Catalina</div></nav>';
 }
 
 
@@ -455,7 +465,7 @@ function pintarFranja() {
   } else if (!S.servidor.momento) {
     clase = 'sube'; icono = 'nube'; texto = 'Descargando inventario…';
   } else {
-    texto = 'Todo sincronizado · ' + horaTxt(new Date(S.servidor.momento)) + ' · funciona sin señal';
+    texto = 'Sincronizado · ' + horaTxt(new Date(S.servidor.momento));
   }
   el.className = 'franja ' + clase;
   el.innerHTML = ico(icono, 'm') + '<span>' + esc(texto) + '</span>' + botones;
@@ -477,23 +487,26 @@ function vInventario() {
       esc(texto) + (n !== undefined ? '<span class="n">' + n + '</span>' : '') + '</button>';
   }
 
-  return '<header class="cab">' +
+  const pend = Array.from(m.grupos.values()).filter(function(g) { return g.estado === 'Por instalar'; }).length;
+  return '<header class="cab inv">' +
       '<div class="fila">' +
         '<img class="logo" src="logo.jpg" alt="Logo Clínica Reina Catalina">' +
-        '<div class="tit"><h1>Inventario Gases Medicinales</h1><small>Clínica Reina Catalina</small></div>' +
+        '<div class="tit"><h1><span class="solo-cel">Inventario Gases</span><span class="solo-pc">Inventario</span></h1>' +
+          '<small><span class="solo-cel">Clínica Reina Catalina</span><span class="solo-pc">' + plural(m.lista.length, 'artículo', 'artículos') + ' · almacén Barranquilla</span></small></div>' +
         (S.instalar ? '<button class="btn-cab txt" data-a="instalar">' + ico('instalar', 'm') + 'Instalar</button>' : '') +
         '<button class="btn-cab" data-a="opciones" aria-label="Más opciones">' + ico('menu') + '</button>' +
       '</div>' +
       '<label class="buscar">' + ico('buscar') +
         '<input id="busqueda" type="search" placeholder="Buscar: manguera, racor, ohmeda…" aria-label="Buscar artículo" value="' + esc(S.busqueda) + '" autocomplete="off">' +
         (S.busqueda ? '<button data-a="limpiarBusqueda" aria-label="Borrar búsqueda">' + ico('cerrar', 'm') + '</button>' : '') +
-      '</label>' +
-    '</header>' + franja() +
+      '</label>' + franja() +
+    '</header>' +
     '<div class="cuerpo">' +
       '<div class="resumen">' +
-        '<button class="cifra" data-a="filtro" data-x="todos" aria-pressed="' + (f === 'todos') + '"><b>' + m.lista.length + '</b><span>Artículos</span></button>' +
-        '<button class="cifra bajo" data-a="filtro" data-x="bajo" aria-pressed="' + (f === 'bajo') + '"><b>' + bajos + '</b><span>Bajo mínimo</span></button>' +
-        '<button class="cifra agot" data-a="filtro" data-x="agot" aria-pressed="' + (f === 'agot') + '"><b>' + agot + '</b><span>Agotados</span></button>' +
+        '<button class="cifra" data-a="filtro" data-x="todos" aria-pressed="' + (f === 'todos') + '"><span class="ic">' + ico('caja') + '</span><span><b>' + m.lista.length + '</b><span>Artículos</span></span></button>' +
+        '<button class="cifra bajo" data-a="filtro" data-x="bajo" aria-pressed="' + (f === 'bajo') + '"><span class="ic">' + ico('alerta') + '</span><span><b>' + bajos + '</b><span>Bajo mínimo</span></span></button>' +
+        '<button class="cifra agot" data-a="filtro" data-x="agot" aria-pressed="' + (f === 'agot') + '"><span class="ic">' + ico('agotado') + '</span><span><b>' + agot + '</b><span>Agotados</span></span></button>' +
+        '<button class="cifra pend" data-a="tab" data-x="#/pendientes"><span class="ic">' + ico('reloj') + '</span><span><b>' + pend + '</b><span>Por instalar</span></span></button>' +
       '</div>' +
       '<div class="chips" role="toolbar" aria-label="Filtros">' +
         chip('todos', 'Todos') + chip('revisar', 'Por revisar', bajos + agot) +
@@ -534,16 +547,20 @@ function pintarListaArt() {
   lista.forEach(function(a) {
     if (agrupar && a.categoria !== cat) {
       cat = a.categoria;
-      html += '<div class="seccion">' + esc(cat) + '</div>';
+      const deCat = lista.filter(function(x) { return x.categoria === cat; });
+      const ag = deCat.filter(function(x) { return x.est === 'agot'; }).length;
+      const bj = deCat.filter(function(x) { return x.est === 'bajo'; }).length;
+      html += '<div class="seccion">' + esc(cat) + '<small>' + plural(deCat.length, 'artículo', 'artículos') +
+        (ag ? ' · ' + plural(ag, 'agotado', 'agotados') : '') + (bj ? ' · ' + bj + ' bajo mínimo' : '') + '</small></div>';
     }
     const sub = [];
     if (!agrupar) sub.push(a.categoria);
     sub.push(a.minimo > 0 ? 'mín. ' + fmt(a.minimo) + ' ' + uni(a.unidad) : 'sin mínimo');
     if (a.pend > 0) sub.push(fmt(a.pend) + ' en pendientes');
-    html += '<button class="art" data-a="ir" data-x="#/item/' + esc(a.id) + '">' +
+    html += '<button class="art e-' + a.est + '" data-a="ir" data-x="#/item/' + esc(a.id) + '">' +
       '<span class="foto-mini">' + (a.miniatura ? '<img src="' + esc(a.miniatura) + '" alt="" loading="lazy">' : ico('camara')) + '</span>' +
       '<span class="txt"><span class="nom">' + esc(a.nombre) + '</span><span class="sub" style="display:block">' + esc(sub.join(' · ')) + '</span></span>' +
-      '<span class="der"><span class="cant">' + fmt(a.stock) + ' <small>' + uni(a.unidad) + '</small></span>' + tagEstado(a) + '</span>' +
+      '<span class="der"><span class="cant"><b>' + fmt(a.stock) + '</b> <small>' + uni(a.unidad) + '</small></span><span class="est">' + ({ agot: 'Agotado', bajo: 'Bajo mínimo', ok: 'OK' })[a.est] + '</span></span>' +
     '</button>';
   });
   el.innerHTML = html;
@@ -858,6 +875,7 @@ function refrescarLinea(i) {
 
 function guardarMov() {
   const f = S.form;
+  if (!f) return; // segundo toque mientras se cierra el formulario
   const e = erroresForm(f);
   if (Object.keys(e).length) {
     f.intentado = true;
@@ -1309,7 +1327,14 @@ function encolar(accion, payload) {
 }
 
 async function traerDatos() {
-  const r = await llamar('datos', {}, 60000);
+  // Las miniaturas pesan: se piden solo las que cambiaron desde la última descarga.
+  const previos = S.servidor.articulos || [];
+  const desde = previos.length && S.servidor.momento ? S.servidor.momento : '';
+  const r = await llamar('datos', { fotosDesde: desde }, 60000);
+  if (r.fotosParciales) {
+    const viejas = new Map(previos.map(function(a) { return [a.id, a.miniatura || '']; }));
+    r.articulos.forEach(function(a) { if (a.miniatura === undefined) a.miniatura = viejas.get(a.id) || ''; });
+  }
   S.servidor = { articulos: r.articulos, movimientos: r.movimientos, tecnicos: r.tecnicos, momento: r.momento };
   await guardarDato('servidor', S.servidor);
   cambio();
