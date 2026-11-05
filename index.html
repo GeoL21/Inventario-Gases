@@ -321,6 +321,21 @@ textarea.inp{min-height:72px;resize:vertical}
 :root{--ease-out:cubic-bezier(0.23,1,0.32,1)}
 button,.btn{transition:transform 150ms var(--ease-out)}
 button:active:not(:disabled),.btn:active{transform:scale(.98)}
+/* Palomita que se dibuja (guardado y sincronizado) */
+.dibuja{stroke-dasharray:24;stroke-dashoffset:24;animation:dibuja 350ms var(--ease-out) 80ms forwards}
+@keyframes dibuja{to{stroke-dashoffset:0}}
+/* Nube que late mientras sube */
+.late{animation:late 1.2s ease-in-out infinite}
+@keyframes late{50%{opacity:.35;transform:translateY(-2px)}}
+/* Contador de pendientes que salta cuando cambia */
+.badge.salta{animation:salta 400ms var(--ease-out)}
+@keyframes salta{30%{transform:scale(1.35)}}
+/* Stock que cambió: destello */
+.cant.cambio{border-radius:8px;animation:destello 1s var(--ease-out)}
+@keyframes destello{0%{background:var(--vino-suave);box-shadow:0 0 0 4px var(--vino-suave)}100%{background:transparent;box-shadow:0 0 0 4px transparent}}
+/* Foto recién subida: aparece suave */
+.foto-mini img.nueva{animation:fundido 300ms var(--ease-out)}
+@keyframes fundido{from{opacity:0;transform:scale(.92)}}
 /* Con "reducir movimiento" activado en el teléfono: sin escalas */
 @media (prefers-reduced-motion:reduce){button:active:not(:disabled),.btn:active{transform:none!important}}
 </style>

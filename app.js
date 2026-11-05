@@ -88,10 +88,26 @@ function nuevoId(prefijo) {
 
 function plural(n, uno, varios) { return n + ' ' + (n === 1 ? uno : varios); }
 
+const QUIETO = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+// Memoria para animar solo lo que cambió (nunca al filtrar o buscar)
+const ANTES = { stock: null, pend: null, franja: '', fotoNueva: '' };
+
+/** Cuenta de un número a otro en ~400 ms. */
+function contar(el, desde, hasta) {
+  if (QUIETO || !el) { if (el) el.textContent = fmt(hasta); return; }
+  const t0 = performance.now(), dur = 400;
+  (function paso(t) {
+    const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = fmt(Math.round((desde + (hasta - desde) * e) * 100) / 100);
+    if (k < 1) requestAnimationFrame(paso);
+  })(t0);
+}
+
 let relojToast = null;
 function toast(texto, icono) {
   const capa = $('capaToast');
-  capa.innerHTML = '<div class="toast" role="status">' + ico(icono || 'check') + '<span>' + esc(texto) + '</span></div>';
+  capa.innerHTML = '<div class="toast" role="status">' + (icono ? ico(icono) : '<svg class="i dibuja" aria-hidden="true"><use href="#i-check"/></svg>') + '<span>' + esc(texto) + '</span></div>';
   clearTimeout(relojToast);
   relojToast = setTimeout(function() { capa.innerHTML = ''; }, 3200);
 }
@@ -426,9 +442,10 @@ function pintarNav(vista) {
     '<div class="marca"><img src="logo.jpg" alt=""><b>Inventario<br>Gases Medicinales</b></div><div class="in">' +
     tab('inventario', '#/inventario', 'caja', 'Inventario') +
     '<button class="tab" data-a="ir" data-x="#/mov"><span class="mas">' + ico('mas') + '</span>Movimiento</button>' +
-    tab('pendientes', '#/pendientes', 'reloj', 'Pendientes', pend ? '<span class="badge">' + pend + '</span>' : '') +
+    tab('pendientes', '#/pendientes', 'reloj', 'Pendientes', pend ? '<span class="badge' + (ANTES.pend !== null && ANTES.pend !== pend ? ' salta' : '') + '">' + pend + '</span>' : '') +
     tab('historial', '#/historial', 'lista', 'Historial') +
     '</div><div class="pie-nav">Clínica Reina Catalina</div></nav>';
+  ANTES.pend = pend;
 }
 
 
@@ -467,8 +484,12 @@ function pintarFranja() {
   } else {
     texto = 'Sincronizado · ' + horaTxt(new Date(S.servidor.momento));
   }
+  const recien = clase === 'ok' && ANTES.franja === 'sube';
+  ANTES.franja = clase;
   el.className = 'franja ' + clase;
-  el.innerHTML = ico(icono, 'm') + '<span>' + esc(texto) + '</span>' + botones;
+  el.innerHTML = (clase === 'sube' ? '<svg class="i i-m late" aria-hidden="true"><use href="#i-nube"/></svg>'
+      : recien ? '<svg class="i i-m dibuja" aria-hidden="true"><use href="#i-check"/></svg>' : ico(icono, 'm')) +
+    '<span>' + esc(texto) + '</span>' + botones;
 }
 
 
@@ -558,12 +579,23 @@ function pintarListaArt() {
     sub.push(a.minimo > 0 ? 'mín. ' + fmt(a.minimo) + ' ' + uni(a.unidad) : 'sin mínimo');
     if (a.pend > 0) sub.push(fmt(a.pend) + ' en pendientes');
     html += '<button class="art e-' + a.est + '" data-a="ir" data-x="#/item/' + esc(a.id) + '">' +
-      '<span class="foto-mini">' + (a.miniatura ? '<img src="' + esc(a.miniatura) + '" alt="" loading="lazy">' : ico('camara')) + '</span>' +
+      '<span class="foto-mini">' + (a.miniatura ? '<img src="' + esc(a.miniatura) + '" alt="" loading="lazy"' + (ANTES.fotoNueva === a.id ? ' class="nueva"' : '') + '>' : ico('camara')) + '</span>' +
       '<span class="txt"><span class="nom">' + esc(a.nombre) + '</span><span class="sub" style="display:block">' + esc(sub.join(' · ')) + '</span></span>' +
-      '<span class="der"><span class="cant"><b>' + fmt(a.stock) + '</b> <small>' + uni(a.unidad) + '</small></span><span class="est">' + ({ agot: 'Agotado', bajo: 'Bajo mínimo', ok: 'OK' })[a.est] + '</span></span>' +
+      '<span class="der"><span class="cant"><b data-id="' + esc(a.id) + '">' + fmt(a.stock) + '</b> <small>' + uni(a.unidad) + '</small></span><span class="est">' + ({ agot: 'Agotado', bajo: 'Bajo mínimo', ok: 'OK' })[a.est] + '</span></span>' +
     '</button>';
   });
   el.innerHTML = html;
+  ANTES.fotoNueva = '';
+  // Destello en los números de stock que cambiaron desde la última vez (no al filtrar: el stock no cambia)
+  const previo = ANTES.stock;
+  ANTES.stock = new Map(m.lista.map(function(a) { return [a.id, a.stock]; }));
+  if (!previo) return;
+  el.querySelectorAll('.cant b[data-id]').forEach(function(b) {
+    const id = b.getAttribute('data-id'), v = ANTES.stock.get(id), antes = previo.get(id);
+    if (antes === undefined || antes === v) return;
+    contar(b, antes, v);
+    b.parentNode.classList.add('cambio');
+  });
 }
 
 
@@ -1307,6 +1339,7 @@ async function fotoElegida(archivo) {
     // Si ya había una foto sin subir de este artículo, se reemplaza
     S.cola = S.cola.filter(function(op) { return !(op.accion === 'foto' && op.payload.id === id); });
     encolar('foto', { id: id, imagen: grande.split(',')[1], miniatura: mini });
+    ANTES.fotoNueva = id;
     render();
     toast('Foto guardada' + (navigator.onLine ? '' : ' · se sube al volver la señal'));
     sincronizar();
