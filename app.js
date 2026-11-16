@@ -421,7 +421,60 @@ function render() {
   pintarNav(vista);
   pintarFranja();
   if (vista === 'inventario') pintarListaArt();
+  if (vista === 'mov') pintarListosMov();
+  cerrarSnack();
 }
+
+/***********************
+ * ESTÁNDAR: mensaje de lo que falta y sonidos
+ ***********************/
+
+const NOMBRE_FALTA = { ticket: 'el ticket', destino: 'el destino', tec: 'los técnicos', items: 'los artículos' };
+const CAMPO_FALTA = { ticket: 'err-ticket', destino: 'err-destino', tec: 'err-tec', items: 'err-items' };
+let snackCampo = '';
+function abrirSnack(e) {
+  const k = ['ticket', 'destino', 'tec', 'items'].filter(function(x) { return e[x]; });
+  if (!k.length) return;
+  const n = k.map(function(x) { return NOMBRE_FALTA[x]; });
+  $('snackTit').textContent = k.length === 1 ? 'Falta un dato' : 'Faltan ' + k.length + ' datos';
+  $('snackTxt').textContent = 'Revisa ' + (n.length > 1 ? n.slice(0, -1).join(', ') + ' y ' + n[n.length - 1] : n[0]) + '.';
+  snackCampo = CAMPO_FALTA[k[0]];
+  $('snack').classList.add('on');
+  sonarFalta();
+  clearTimeout(abrirSnack.t);
+  abrirSnack.t = setTimeout(cerrarSnack, 8000);
+}
+function cerrarSnack() { const s = $('snack'); if (s) s.classList.remove('on'); }
+function irFalta() {
+  cerrarSnack();
+  const el = $(snackCampo);
+  if (el) el.closest('.tarjeta, .campo, div').scrollIntoView({ behavior: DESPLAZA, block: 'center' });
+}
+let audio = null;
+function prepararSonido() {
+  try {
+    if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+    if (audio.state === 'suspended') audio.resume();
+  } catch (e) { audio = null; }
+}
+function tono(notas, vol) {
+  if (!audio) return;
+  try {
+    const t0 = audio.currentTime + 0.02;
+    notas.forEach(function(n) {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = 'sine'; o.frequency.value = n[0];
+      g.gain.setValueAtTime(0, t0 + n[1]);
+      g.gain.linearRampToValueAtTime(vol, t0 + n[1] + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + n[1] + n[2]);
+      o.connect(g); g.connect(audio.destination);
+      o.start(t0 + n[1]); o.stop(t0 + n[1] + n[2] + 0.05);
+    });
+  } catch (e) { /* sin sonido */ }
+}
+function vibrar(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) { /* nada */ } }
+function sonarListo() { tono([[784, 0, 0.28], [1046.5, 0.13, 0.28], [1318.5, 0.26, 0.5]], 0.22); vibrar([50, 60, 90]); }
+function sonarFalta() { tono([[659.3, 0, 0.22], [523.3, 0.16, 0.34]], 0.2); vibrar([90, 70, 90]); }
 
 /** Título de la ventana: en la app instalada solo la sección (el sistema ya antepone el nombre de la app). */
 function tituloVentana(vista) {
@@ -436,13 +489,13 @@ function pintarNav(vista) {
   const pend = Array.from(modelo().grupos.values()).filter(function(g) { return g.estado === 'Por instalar'; }).length;
   function tab(clave, ruta, icono, texto, extra) {
     return '<button class="tab" data-a="tab" data-x="' + ruta + '"' +
-      (vista === clave ? ' aria-current="page"' : '') + '>' + ico(icono) + texto + (extra || '') + '</button>';
+      (vista === clave ? ' aria-current="page"' : '') + '><span class="pill">' + ico(icono) + (extra || '') + '</span>' + texto + '</button>';
   }
   $('capaNav').innerHTML = '<nav class="nav" aria-label="Secciones">' +
-    '<div class="marca"><img src="logo.jpg" alt=""><b>Inventario<br>Gases Medicinales</b></div><div class="in">' +
+    '<div class="marca"><img src="logo-crc.png" alt=""><b>Inventario<br>Gases Medicinales</b></div><div class="in">' +
     tab('inventario', '#/inventario', 'caja', 'Inventario') +
-    '<button class="tab" data-a="ir" data-x="#/mov"><span class="mas">' + ico('mas') + '</span>Movimiento</button>' +
-    tab('pendientes', '#/pendientes', 'reloj', 'Pendientes', pend ? '<span class="badge' + (ANTES.pend !== null && ANTES.pend !== pend ? ' salta' : '') + '">' + pend + '</span>' : '') +
+    '<button class="tab tab-mov" data-a="ir" data-x="#/mov"><span class="pill">' + ico('mascirc') + '</span>Movimiento</button>' +
+    tab('pendientes', '#/pendientes', 'reloj', 'Pendientes', pend ? '<span class="badge late-suave' + (ANTES.pend !== null && ANTES.pend !== pend ? ' salta' : '') + '">' + pend + '</span>' : '') +
     tab('historial', '#/historial', 'lista', 'Historial') +
     '</div><div class="pie-nav">Clínica Reina Catalina</div></nav>';
   ANTES.pend = pend;
@@ -509,19 +562,14 @@ function vInventario() {
   }
 
   const pend = Array.from(m.grupos.values()).filter(function(g) { return g.estado === 'Por instalar'; }).length;
-  return '<header class="cab inv">' +
-      '<div class="fila">' +
-        '<img class="logo" src="logo.jpg" alt="Logo Clínica Reina Catalina">' +
-        '<div class="tit"><h1><span class="solo-cel">Inventario Gases</span><span class="solo-pc">Inventario</span></h1>' +
-          '<small><span class="solo-cel">Clínica Reina Catalina</span><span class="solo-pc">' + plural(m.lista.length, 'artículo', 'artículos') + ' · almacén Barranquilla</span></small></div>' +
-        (S.instalar ? '<button class="btn-cab txt" data-a="instalar">' + ico('instalar', 'm') + 'Instalar</button>' : '') +
-        '<button class="btn-cab" data-a="opciones" aria-label="Más opciones">' + ico('menu') + '</button>' +
-      '</div>' +
-      '<label class="buscar">' + ico('buscar') +
+  return cabEst({ volver: 'portal', titulo: 'Inventario de gases', clase: 'inv',
+      sub: 'Almacén Barranquilla · ' + plural(m.lista.length, 'artículo', 'artículos'),
+      extra: (S.instalar ? '<button class="btn-cab" data-a="instalar" aria-label="Instalar la app">' + ico('instalar') + '</button>' : '') +
+        '<button class="btn-cab" data-a="opciones" aria-label="Más opciones">' + ico('menu') + '</button>',
+      buscar: '<label class="buscar">' + ico('buscar') +
         '<input id="busqueda" type="search" placeholder="Buscar: manguera, racor, ohmeda…" aria-label="Buscar artículo" value="' + esc(S.busqueda) + '" autocomplete="off">' +
         (S.busqueda ? '<button data-a="limpiarBusqueda" aria-label="Borrar búsqueda">' + ico('cerrar', 'm') + '</button>' : '') +
-      '</label>' + franja() +
-    '</header>' +
+      '</label>' }) +
     '<div class="cuerpo">' +
       '<div class="resumen">' +
         '<button class="cifra" data-a="filtro" data-x="todos" aria-pressed="' + (f === 'todos') + '"><span class="ic">' + ico('caja') + '</span><span><b>' + m.lista.length + '</b><span>Artículos</span></span></button>' +
@@ -580,8 +628,9 @@ function pintarListaArt() {
     if (a.pend > 0) sub.push(fmt(a.pend) + ' en pendientes');
     html += '<button class="art e-' + a.est + '" data-a="ir" data-x="#/item/' + esc(a.id) + '">' +
       '<span class="foto-mini">' + (a.miniatura ? '<img src="' + esc(a.miniatura) + '" alt="" loading="lazy"' + (ANTES.fotoNueva === a.id ? ' class="nueva"' : '') + '>' : ico('camara')) + '</span>' +
-      '<span class="txt"><span class="nom">' + esc(a.nombre) + '</span><span class="sub" style="display:block">' + esc(sub.join(' · ')) + '</span></span>' +
-      '<span class="der"><span class="cant"><b data-id="' + esc(a.id) + '">' + fmt(a.stock) + '</b> <small>' + uni(a.unidad) + '</small></span><span class="est">' + ({ agot: 'Agotado', bajo: 'Bajo mínimo', ok: 'OK' })[a.est] + '</span></span>' +
+      '<span class="txt"><span class="nom">' + esc(a.nombre) + '</span><span class="sub" style="display:block">' + esc(sub.join(' · ')) + '</span>' +
+      '<span class="est-chip ' + a.est + '">' + ({ agot: ico('agotado', 's'), bajo: ico('alerta', 's'), ok: ico('sello', 's sello') })[a.est] + ({ agot: 'Agotado', bajo: 'Bajo mínimo', ok: 'Bien' })[a.est] + '</span>' +
+      '</span><span class="der"><span class="cant"><b data-id="' + esc(a.id) + '">' + fmt(a.stock) + '</b> <small>' + uni(a.unidad) + '</small></span></span>' +
     '</button>';
   });
   el.innerHTML = html;
@@ -604,11 +653,34 @@ function pintarListaArt() {
  ***********************/
 
 function cabSimple(titulo, sub, derecha) {
-  return '<header class="cab"><div class="fila">' +
-    '<button class="btn-cab" data-a="volver" aria-label="Volver">' + ico('atras') + '</button>' +
-    '<div class="tit"><h1 style="font-size:17px">' + esc(titulo) + '</h1>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>' +
-    (derecha || '') + '</div></header>';
+  return cabEst({ volver: 'atras', titulo: titulo, sub: sub, extra: derecha, franja: false });
 }
+
+/**
+ * Encabezado estándar de las PWA: volver (al portal o atrás), logo, título grande,
+ * subtítulo, estado de subida y reloj de Colombia.
+ */
+function cabEst(o) {
+  const v = o.volver === 'portal'
+    ? '<a class="volver" href="https://geol21.github.io/" aria-label="Volver al portal de apps">' + ico('flecha') + '</a>'
+    : o.volver === 'cerrar'
+      ? '<button class="volver" data-a="cancelarMov" aria-label="Cerrar">' + ico('cerrar') + '</button>'
+      : '<button class="volver" data-a="volver" aria-label="Volver">' + ico('flecha') + '</button>';
+  return '<header class="cab est' + (o.clase ? ' ' + o.clase : '') + '"><div class="hrow">' + v +
+      '<div class="hder">' + (o.extra || '') + '<img class="logo" src="logo-crc.png" alt="Clínica Reina Catalina"></div></div>' +
+    '<h1>' + (o.tituloHtml || esc(o.titulo)) + '</h1>' + (o.sub ? '<p class="sub">' + esc(o.sub) + '</p>' : '') +
+    '<div class="estado-fila">' + (o.franja === false ? '<span></span>' : franja()) +
+      '<span class="hora" aria-label="Hora de Colombia">' + ico('reloj', 'm') + '<span class="hora-txt">' + horaColombia() + '</span></span></div>' +
+    (o.buscar || '') + '</header>';
+}
+
+function horaColombia() {
+  return new Date().toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Bogota' })
+    .replace(/a\.?\s?m\.?/i, 'a. m.').replace(/p\.?\s?m\.?/i, 'p. m.');
+}
+setInterval(function() {
+  document.querySelectorAll('.hora-txt').forEach(function(e) { e.textContent = horaColombia(); });
+}, 15000);
 
 function vItem(id) {
   const m = modelo();
@@ -826,7 +898,7 @@ function htmlMov() {
     cuerpo += '<div class="segmento" role="radiogroup" aria-label="Tipo de movimiento">' + tipoBtns + '</div>';
   }
 
-  cuerpo += '<div class="dos">' +
+  cuerpo += sec('Ticket y destino', 'tgTicket') + '<div class="tarjeta grupo-f"><div class="dos">' +
       '<div class="campo"><label class="lbl" for="fTicket">' + etiquetaTicket(f.tipo) + (f.tipo === 'Retiro' ? '' : ' <small>(opcional)</small>') + '</label>' +
         '<input class="inp" id="fTicket" data-campo="ticket" ' + (f.tipo === 'Ingreso' ? '' : 'inputmode="numeric" ') + 'value="' + esc(f.ticket) + '"' +
         (f.sinTicket && f.tipo === 'Retiro' ? ' disabled' : '') + (e.ticket ? ' aria-invalid="true"' : '') + '></div>' +
@@ -840,11 +912,11 @@ function htmlMov() {
     cuerpo += '<label class="check"><input type="checkbox" data-campo="sinTicket"' + (f.sinTicket ? ' checked' : '') + '>Sin ticket</label>';
   }
   cuerpo += errorHtml('err-ticket', e.ticket) + errorHtml('err-destino', e.destino) +
-    '<div class="ayuda alerta" id="aviso-ticket">' + esc(aviso) + '</div>';
+    '<div class="ayuda alerta" id="aviso-ticket">' + esc(aviso) + '</div></div>';
 
-  cuerpo += '<div class="campo"><span class="lbl">Técnicos</span><div class="opciones">' + tecBtns + '</div>' + errorHtml('err-tec', e.tec) + '</div>';
+  cuerpo += sec('Técnicos', 'tgTec') + '<div class="tarjeta grupo-f"><div class="opciones">' + tecBtns + '</div>' + errorHtml('err-tec', e.tec) + '</div>';
 
-  cuerpo += '<div class="tarjeta items"><div class="top"><b>Artículos (' + f.items.length + ')</b>' +
+  cuerpo += sec('Artículos (' + f.items.length + ')', 'tgItems') + '<div class="tarjeta items"><div class="top"><b>Artículos (' + f.items.length + ')</b>' +
       '<button class="agregar" data-a="elegirArt">' + ico('mas', 'm') + 'Agregar</button></div>' +
       (f.items.length ? f.items.map(function(it, i) { return htmlLinea(f, it, i); }).join('')
         : '<p class="ayuda" style="padding:4px 0 8px">Toca "Agregar" para elegir el material.</p>') +
@@ -852,9 +924,9 @@ function htmlMov() {
     '</div>';
 
   if (f.tipo === 'Retiro') {
-    cuerpo += '<div class="campo"><span class="lbl">Estado del trabajo</span><div class="estado2" role="radiogroup" aria-label="Estado del trabajo">' +
+    cuerpo += sec('Estado del trabajo', 'tgEstado') + '<div class="tarjeta grupo-f seg-f"><div class="estado2" role="radiogroup" aria-label="Estado del trabajo">' +
       '<button class="pend" role="radio" data-a="estadoForm" data-x="Por instalar" aria-checked="' + (f.estado === 'Por instalar') + '">' + ico('reloj', 'm') + 'Por instalar</button>' +
-      '<button class="inst" role="radio" data-a="estadoForm" data-x="Instalado" aria-checked="' + (f.estado === 'Instalado') + '">' + ico('check', 'm') + 'Instalado</button>' +
+      '<button class="inst" role="radio" data-a="estadoForm" data-x="Instalado" aria-checked="' + (f.estado === 'Instalado') + '">' + ico('sello', 'm sello') + 'Instalado</button>' +
     '</div></div>';
   }
   if (origen) {
@@ -865,10 +937,7 @@ function htmlMov() {
 
   const textoGuardar = { 'Retiro': 'Guardar retiro', 'Devolución': 'Guardar devolución', 'Ingreso': 'Guardar ingreso' }[f.tipo];
 
-  return '<header class="cab"><div class="fila">' +
-      '<button class="btn-cab" data-a="cancelarMov" aria-label="Cerrar">' + ico('cerrar') + '</button>' +
-      '<div class="tit"><h1 style="font-size:17px">Nuevo movimiento</h1><small>' + esc(fechaTxt(ahora.toISOString(), true)) + ' (automático)</small></div>' +
-    '</div></header>' +
+  return cabEst({ volver: 'cerrar', titulo: 'Nuevo movimiento', sub: fechaTxt(ahora.toISOString(), true) + ' (automático)', franja: false }) +
     '<div class="cuerpo con-barra">' + cuerpo + '</div>' +
     '<div class="barra-inf"><div class="in"><button class="btn" data-a="guardarMov">' + ico('check') + textoGuardar + '</button></div></div>';
 }
@@ -877,10 +946,36 @@ function repintarMov() {
   const y = window.scrollY;
   $('vista').innerHTML = htmlMov();
   window.scrollTo(0, y);
+  pintarListosMov();
+}
+
+/** Título de sección con su chip "Listo". */
+function sec(titulo, id) {
+  return '<p class="secc"><span>' + esc(titulo) + '</span><span class="tag ok listo" id="' + id + '"></span></p>';
+}
+
+function ponerListo(id, ok) {
+  const t = $(id);
+  if (!t) return;
+  if ((t.dataset.ok === '1') === ok) return;
+  t.dataset.ok = ok ? '1' : '';
+  t.innerHTML = ok ? ico('sello', 's sello') + 'Listo' : '';
+}
+
+/** Chips "Listo" del movimiento: se encienden cuando cada parte está completa. */
+function pintarListosMov() {
+  const f = S.form;
+  if (!f || !$('tgTicket')) return;
+  const e = erroresForm(f);
+  ponerListo('tgTicket', !e.ticket && !e.destino);
+  ponerListo('tgTec', !e.tec);
+  ponerListo('tgItems', !e.items);
+  ponerListo('tgEstado', !!f.estado);
 }
 
 function refrescarErroresMov() {
   const f = S.form;
+  pintarListosMov();
   const av = $('aviso-ticket');
   if (av) av.textContent = avisoTicket(f);
   if (!f.intentado) return;
@@ -908,10 +1003,13 @@ function refrescarLinea(i) {
 function guardarMov() {
   const f = S.form;
   if (!f) return; // segundo toque mientras se cierra el formulario
+  prepararSonido();
+  cerrarSnack();
   const e = erroresForm(f);
   if (Object.keys(e).length) {
     f.intentado = true;
     repintarMov();
+    abrirSnack(e);
     const primero = document.querySelector('.error:not(:empty)');
     if (primero) primero.scrollIntoView({ block: 'center', behavior: DESPLAZA });
     return;
@@ -931,6 +1029,7 @@ function guardarMov() {
     items: f.items.filter(function(it) { return num(it.q) > 0; }).map(function(it) { return [it.id, num(it.q)]; })
   };
   encolar('registrar', { g: g, cerrarOrigen: !!(f.origen && f.cerrarOrigen) });
+  sonarListo();
   ls('ig_tecnicos', f.tecnicos);
   S.form = null;
   ls('ig_borrador', null);
@@ -974,14 +1073,13 @@ function vPendientes() {
         '<span class="tag ' + ed.cls + '">' + ico('reloj', 's') + ed.txt + '</span></button>' +
       '<div class="its">' + esc(resumenItems(g, 4)) + '</div>' +
       '<div class="bts">' +
-        '<button class="btn sec chico" data-a="ir" data-x="#/mov?origen=' + esc(g.id) + '">Devolver sobrante</button>' +
-        '<button class="btn verde chico" data-a="instalado" data-x="' + esc(g.id) + '">' + ico('check', 'm') + 'Instalado</button>' +
+        '<button class="btn sec chico" data-a="ir" data-x="#/mov?origen=' + esc(g.id) + '">' + ico('vuelve', 'm') + 'Devolver sobrante</button>' +
+        '<button class="btn verde chico" data-a="instalado" data-x="' + esc(g.id) + '">' + ico('sello', 'm sello') + 'Instalado</button>' +
       '</div></div>';
   }).join('') : '<div class="vacio">' + ico('check', 'l') + '<b>No hay retiros pendientes</b><span>Todo lo retirado está instalado.</span></div>';
 
-  return '<header class="cab"><div class="tit"><h1>Pendientes por instalar</h1>' +
-    '<small>' + plural(lista.length, 'retiro', 'retiros') + ' · el material ya salió del inventario</small></div></header>' +
-    franja() + '<div class="cuerpo"><div class="lista">' + tarjetas + '</div></div>';
+  return cabEst({ volver: 'portal', titulo: 'Pendientes', sub: plural(lista.length, 'retiro', 'retiros') + ' por instalar · el material ya salió del inventario' }) +
+    '<div class="cuerpo"><div class="lista tks">' + tarjetas + '</div></div>';
 }
 
 
@@ -994,10 +1092,9 @@ function vHistorial() {
   function chip(v, t) {
     return '<button class="chip" data-a="filtroHist" data-x="' + v + '" aria-pressed="' + (h.filtro === v) + '">' + t + '</button>';
   }
-  return '<header class="cab"><div class="tit"><h1>Historial</h1><small>Retiros, devoluciones e ingresos</small></div>' +
-      '<label class="buscar">' + ico('buscar') +
-        '<input id="busquedaHist" type="search" placeholder="Ticket, destino, artículo…" aria-label="Buscar en el historial" value="' + esc(h.busqueda) + '" autocomplete="off"></label>' +
-    '</header>' + franja() +
+  return cabEst({ volver: 'portal', titulo: 'Historial', sub: 'Retiros, devoluciones e ingresos',
+      buscar: '<label class="buscar">' + ico('buscar') +
+        '<input id="busquedaHist" type="search" placeholder="Ticket, destino, artículo…" aria-label="Buscar en el historial" value="' + esc(h.busqueda) + '" autocomplete="off"></label>' }) +
     '<div class="cuerpo">' +
       '<div class="chips" role="toolbar" aria-label="Filtrar historial">' +
         chip('todos', 'Todos') + chip('Retiro', 'Retiros') + chip('Devolución', 'Devoluciones') +
@@ -1510,7 +1607,7 @@ const ACCIONES = {
     if (!g) return;
     confirmar({ titulo: '¿Marcar como instalado?', clase: 'verde', boton: 'Sí, instalado',
       texto: '<b>' + esc((g.ticket ? 'Ticket ' + g.ticket + ' · ' : '') + g.destino) + '</b>. El material ya salió del inventario; esto solo cierra el pendiente.',
-      si: function() { encolar('estado', { grupo: x, estado: 'Instalado' }); render(); toast('Marcado como instalado'); sincronizar(); } });
+      si: function() { prepararSonido(); encolar('estado', { grupo: x, estado: 'Instalado' }); render(); sonarListo(); toast('Marcado como instalado'); sincronizar(); } });
   },
   anular: function(x) {
     const g = modelo().grupos.get(x);

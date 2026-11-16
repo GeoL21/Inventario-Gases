@@ -20,7 +20,7 @@ mangueras) en Clínica Reina Catalina, con el destino de cada movimiento.
 - En los retiros, "Pendiente" significa material retirado que falta instalar.
 - Con filtros y código de acceso.
 - Funciona sin señal y sube los movimientos al volver la conexión.
-- Todo en español, con el logo y los colores de la clínica. Letra: Plus Jakarta Sans.
+- Todo en español, con el logo y los colores de la clínica.
 
 ## Cómo trabajar aquí
 - Preguntar antes de cambiar algo y mostrar un bosquejo para aprobar.
@@ -29,4 +29,9 @@ mangueras) en Clínica Reina Catalina, con el destino de cada movimiento.
 - Este repo es público: no escribir aquí códigos de acceso ni claves (la URL de `config.js` sí va).
 - Datos del celular con prefijo propio (`ig_`) porque todas las apps de geol21.github.io comparten almacenamiento.
 - Las miniaturas se piden solo si cambiaron (`fotosDesde` / `fotosParciales`) para no gastar datos.
-- Diseño: encabezado blanco sin franja vino, logo en el menú lateral en PC, vino #6A1B3A (igual que Tanques).
+- Diseño (16 nov 2026): estándar Material 3 "Mornye" de todas las PWA: vino #8E4953, fondo #FFF8F7, tarjetas #F8ECEC
+  agrupadas, letra Google Sans Flex, encabezado con volver al portal, logo-crc.png, título grande, estado de subida y reloj de Colombia.
+- Chips de estado de cada artículo: Bien (sello verde), Bajo mínimo (ámbar), Agotado (rojo). Lo agotado late suave
+  y el número de Pendientes de la barra también late, para que se noten.
+- Nuevo movimiento: secciones con chip "Listo" (sello con check); si falta algo, mensaje emergente con sonido.
+- El botón "Instalado" se queda VERDE (lo pidió el usuario). La cantidad se cambia con − y + o escribiéndola.
