@@ -574,7 +574,7 @@ function vInventario() {
       '<div class="resumen">' +
         '<button class="cifra" data-a="filtro" data-x="todos" aria-pressed="' + (f === 'todos') + '"><span class="ic">' + ico('caja') + '</span><span><b>' + m.lista.length + '</b><span>Artículos</span></span></button>' +
         '<button class="cifra bajo" data-a="filtro" data-x="bajo" aria-pressed="' + (f === 'bajo') + '"><span class="ic">' + ico('alerta') + '</span><span><b>' + bajos + '</b><span>Bajo mínimo</span></span></button>' +
-        '<button class="cifra agot" data-a="filtro" data-x="agot" aria-pressed="' + (f === 'agot') + '"><span class="ic">' + ico('agotado') + '</span><span><b>' + agot + '</b><span>Agotados</span></span></button>' +
+        '<button class="cifra agot' + (agot ? ' latiendo' : '') + '" data-a="filtro" data-x="agot" aria-pressed="' + (f === 'agot') + '"><span class="ic">' + ico('agotado') + '</span><span><b>' + agot + '</b><span>Agotados</span></span></button>' +
         '<button class="cifra pend" data-a="tab" data-x="#/pendientes"><span class="ic">' + ico('reloj') + '</span><span><b>' + pend + '</b><span>Por instalar</span></span></button>' +
       '</div>' +
       '<div class="chips" role="toolbar" aria-label="Filtros">' +

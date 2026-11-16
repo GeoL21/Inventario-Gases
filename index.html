@@ -396,7 +396,14 @@ html,body{font-family:"Google Sans Flex","Roboto Flex",system-ui,-apple-system,"
 .cifra.bajo{background:var(--alerta-suave)}.cifra.bajo span{color:var(--alerta-txt)}
 .cifra.agot{background:var(--rojo-suave)}.cifra.agot span{color:#8C1D18}
 .cifra.pend b,.cifra.pend span{color:var(--cont-txt)}
-.cifra[aria-pressed="true"]{outline:2px solid var(--vino)}
+.cifra[aria-pressed="true"]{outline:2px solid var(--vino);outline-offset:2px}
+/* Artículos: color propio para distinguirlo de las demás fichas */
+.cifra:not(.bajo):not(.agot):not(.pend){background:var(--vino)}
+.cifra:not(.bajo):not(.agot):not(.pend) b,.cifra:not(.bajo):not(.agot):not(.pend) span{color:#fff}
+.cifra:not(.bajo):not(.agot):not(.pend) .ic{background:rgba(255,255,255,.18);color:#fff}
+/* Agotados: late suave mientras haya artículos agotados */
+.cifra.agot.latiendo{animation:latidoFicha 2.4s ease-in-out infinite}
+@keyframes latidoFicha{0%,100%{transform:scale(1);background:var(--rojo-suave);box-shadow:0 0 0 0 rgba(179,38,30,0)}50%{transform:scale(1.04);background:#F9D5D2;box-shadow:0 0 0 6px rgba(179,38,30,.12)}}
 .chips{-webkit-mask-image:none;mask-image:none;flex-wrap:wrap;overflow:visible;margin:4px 0 0;padding:0}
 .chip{min-height:36px;border:1px solid var(--linea);background:var(--fondo);font-weight:500;border-radius:18px;transition:background 350ms var(--m3),transform 150ms var(--m3)}
 .chip[aria-pressed="true"]{background:var(--cont);border-color:var(--cont);color:var(--cont-txt);font-weight:600}
