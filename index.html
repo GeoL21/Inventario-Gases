@@ -652,6 +652,17 @@ body{font-weight:500}
 .snack .sa button{font-weight:800}
 @media (min-width:1024px){.tab.tab-mov{font-weight:700}
 }
+
+/* ---------- Artículos disponibles en blanco y agotados en rojo suave que late (17 nov 2026) ----------
+   Antes todos eran rosados y el latido de los agotados casi no se notaba, sobre todo en el PC. */
+.art{background:#fff;box-shadow:inset 0 0 0 1px var(--linea-suave)}
+.art.e-bajo .cant b{color:var(--alerta-txt)}
+.art.e-agot{background:#FCE4E1;box-shadow:none;animation:latidoAgot 2.4s ease-in-out infinite}
+.art.e-agot .foto-mini{background:rgba(255,255,255,.55);color:#8C1D18}
+.art.e-agot .est-chip.agot{background:#fff}
+@keyframes latidoAgot{0%,100%{background:#FCE4E1}50%{background:#F6C6C0}}
+@media (hover:hover){.art:hover{background:#FFFBFB;box-shadow:inset 0 0 0 1px var(--linea)}.art.e-agot:hover{background:#F9D3CE}}
+@media (prefers-reduced-motion:reduce){.art.e-agot{animation:none}}
 </style>
 </head>
 <body>
