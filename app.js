@@ -924,7 +924,7 @@ function htmlMov() {
     '</div>';
 
   if (f.tipo === 'Retiro') {
-    cuerpo += sec('Estado del trabajo', 'tgEstado') + '<div class="tarjeta grupo-f seg-f"><div class="estado2" role="radiogroup" aria-label="Estado del trabajo">' +
+    cuerpo += '<p class="secc"><span>Estado del trabajo</span></p>' + '<div class="tarjeta grupo-f seg-f"><div class="estado2" role="radiogroup" aria-label="Estado del trabajo">' +
       '<button class="pend" role="radio" data-a="estadoForm" data-x="Por instalar" aria-checked="' + (f.estado === 'Por instalar') + '">' + ico('reloj', 'm') + 'Por instalar</button>' +
       '<button class="inst" role="radio" data-a="estadoForm" data-x="Instalado" aria-checked="' + (f.estado === 'Instalado') + '">' + ico('sello', 'm sello') + 'Instalado</button>' +
     '</div></div>';
@@ -970,7 +970,6 @@ function pintarListosMov() {
   ponerListo('tgTicket', !e.ticket && !e.destino);
   ponerListo('tgTec', !e.tec);
   ponerListo('tgItems', !e.items);
-  ponerListo('tgEstado', !!f.estado);
 }
 
 function refrescarErroresMov() {
