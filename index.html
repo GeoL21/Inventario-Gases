@@ -663,6 +663,14 @@ body{font-weight:500}
 @keyframes latidoAgot{0%,100%{background:#FCE4E1}50%{background:#F6C6C0}}
 @media (hover:hover){.art:hover{background:#FFFBFB;box-shadow:inset 0 0 0 1px var(--linea)}.art.e-agot:hover{background:#F9D3CE}}
 @media (prefers-reduced-motion:reduce){.art.e-agot{animation:none}}
+
+/* ---------- Botones de la foto debajo de la imagen (17 nov 2026): antes tapaban el artículo ---------- */
+.foto-grande.con{height:auto;overflow:visible;background:none;display:block;border-radius:0}
+.foto-grande.con img{position:static;display:block;width:100%;height:240px;object-fit:cover;border-radius:28px;background:var(--tarjeta)}
+.foto-grande.con .acciones{position:static;display:flex;gap:8px;margin-top:8px}
+.foto-grande.con .acciones .btn{flex:1;min-height:48px;border-radius:24px;font-size:14px;font-weight:700;padding:0 12px;background:var(--tarjeta);color:var(--tinta);border:0}
+.foto-grande.con .acciones button.btn{background:#FFCCD4;color:#33030F}
+@media (min-width:1024px){.foto-grande.con{height:auto}.foto-grande.con img{height:300px}}
 </style>
 </head>
 <body>
