@@ -484,7 +484,9 @@ html,body{font-family:"Google Sans Flex","Roboto Flex",system-ui,-apple-system,"
 .estado2 button.pend[aria-checked="true"]{border:0;background:var(--alerta-suave)}
 .estado2 button.inst[aria-checked="true"]{border:0;background:var(--ok-suave)}
 .items{padding:6px 16px 12px}
-.items .top{display:none}
+.items{display:flex;flex-direction:column}
+/* El título ya está arriba de la tarjeta: se oculta solo el texto, el botón Agregar queda al final de la lista */
+.items .top{order:2;padding:0}.items .top b{display:none}
 .linea{border-top:1px solid var(--linea-suave);padding:12px 0}
 .linea:first-of-type{border-top:0}
 .paso{border:0;border-radius:20px;background:var(--linea-suave);color:var(--tinta)}
