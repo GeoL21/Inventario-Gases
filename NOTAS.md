@@ -35,3 +35,9 @@ mangueras) en Clínica Reina Catalina, con el destino de cada movimiento.
   y el número de Pendientes de la barra también late, para que se noten.
 - Nuevo movimiento: secciones con chip "Listo" (sello con check); si falta algo, mensaje emergente con sonido.
 - El botón "Instalado" se queda VERDE (lo pidió el usuario). La cantidad se cambia con − y + o escribiéndola.
+
+## PixelUI (18 nov 2026)
+Pasó a PixelUI, copia fiel de Mornye (revisor PixelUI + aprobado por Jorge): superficies neutras (#FFFBFA, filas #F5EEEF,
+#EEE6E7), el rosa #FFCCD4 solo en lo activo; sin botón de volver en Inventario (logo a la izquierda, ícono apps al portal y ⋮ a la derecha);
+cifras de arriba neutras con la elegida en rosa; filas bajo mínimo en ámbar #FFF3DC; títulos de sección negros 20 px;
+Retiro/Devolución/Ingreso y técnicos como fichas. Se conservan Instalado VERDE, Listo, latidos y aviso de lo que falta.

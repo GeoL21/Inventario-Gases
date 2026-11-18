@@ -660,14 +660,17 @@ function cabSimple(titulo, sub, derecha) {
  * Encabezado estándar de las PWA: volver (al portal o atrás), logo, título grande,
  * subtítulo, estado de subida y reloj de Colombia.
  */
+const APPS_SVG = '<svg viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true"><path d="M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z"/></svg>';
 function cabEst(o) {
-  const v = o.volver === 'portal'
-    ? '<a class="volver" href="https://geol21.github.io/" aria-label="Volver al portal de apps">' + ico('flecha') + '</a>'
-    : o.volver === 'cerrar'
+  // PixelUI (como Mornye): en la pantalla principal no hay botón de volver; logo a la izquierda y el portal a la derecha.
+  const logo = '<img class="logo" src="logo-crc.png" alt="Clínica Reina Catalina">';
+  const portal = '<a class="portal" href="https://geol21.github.io/" aria-label="Abrir el portal de apps">' + APPS_SVG + '</a>';
+  const izq = o.volver === 'portal' ? logo
+    : (o.volver === 'cerrar'
       ? '<button class="volver" data-a="cancelarMov" aria-label="Cerrar">' + ico('cerrar') + '</button>'
-      : '<button class="volver" data-a="volver" aria-label="Volver">' + ico('flecha') + '</button>';
-  return '<header class="cab est' + (o.clase ? ' ' + o.clase : '') + '"><div class="hrow">' + v +
-      '<div class="hder">' + (o.extra || '') + '<img class="logo" src="logo-crc.png" alt="Clínica Reina Catalina"></div></div>' +
+      : '<button class="volver" data-a="volver" aria-label="Volver">' + ico('flecha') + '</button>') + logo;
+  return '<header class="cab est' + (o.clase ? ' ' + o.clase : '') + '"><div class="hrow"><div class="hizq">' + izq + '</div>' +
+      '<div class="hder">' + (o.extra || '') + (o.volver === 'portal' ? portal : '') + '</div></div>' +
     '<h1>' + (o.tituloHtml || esc(o.titulo)) + '</h1>' + (o.sub ? '<p class="sub">' + esc(o.sub) + '</p>' : '') +
     '<div class="estado-fila">' + (o.franja === false ? '<span></span>' : franja()) +
       '<span class="hora" aria-label="Hora de Colombia">' + ico('reloj', 'm') + '<span class="hora-txt">' + horaColombia() + '</span></span></div>' +
@@ -1133,7 +1136,7 @@ function htmlListaHist() {
     if (g.local) meta.push('por subir');
     html += '<button class="hist' + (g.estado === 'Anulado' ? ' anulado' : '') + '" data-a="grupo" data-x="' + esc(g.id) + '">' +
       '<span class="ico ' + ic[0] + '" style="width:40px;height:40px;border-radius:10px;display:grid;place-items:center;flex:none">' + ico(ic[1], 'm') + '</span>' +
-      '<span class="txt"><span class="d" style="display:block">' + esc(g.tipo + ' · ' + g.destino) + '</span><span class="m">' + esc(meta.join(' · ')) + '</span></span>' +
+      '<span class="txt"><span class="d" style="display:block">' + esc([g.tipo, g.destino].filter(Boolean).join(' · ') || 'Movimiento') + '</span><span class="m">' + esc(meta.join(' · ')) + '</span></span>' +
       tagGrupo(g) + '</button>';
   });
   return html;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FFF8F7">
+<meta name="theme-color" content="#FFFBFA">
 <meta name="description" content="Inventario de material de gases medicinales. Funciona sin señal.">
 <title>Inventario Gases Medicinales</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -11,8 +11,7 @@
 <link rel="apple-touch-icon" href="icon-192.png?v=20261117">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400..900&display=swap" rel="stylesheet">
 <style>
 @font-face{font-family:"Plus Jakarta Sans";src:url("PlusJakartaSans.ttf") format("truetype");font-weight:200 800;font-display:swap}
 :root{
@@ -673,6 +672,64 @@ body{font-weight:500}
 .foto-grande.con .acciones .btn{flex:1;min-height:48px;border-radius:24px;font-size:14px;font-weight:700;padding:0 12px;background:var(--tarjeta);color:var(--tinta);border:0}
 .foto-grande.con .acciones button.btn{background:#FFCCD4;color:#33030F}
 @media (min-width:1024px){.foto-grande.con{height:auto}.foto-grande.con img{height:300px}}
+
+/* ---------- PixelUI: copia fiel de Mornye (18 nov 2026) ----------
+   Superficies neutras y el rosa solo en lo activo. Mismos datos, estados, latidos, Listo, Instalado verde y funciones. */
+:root{--fondo:#FFFBFA;--tarjeta:#F5EEEF;--vino-suave:#F5EEEF;--linea-suave:#EEE6E7;--alta:#EEE6E7;--barra:#F3ECED}
+body{background:var(--fondo);font-weight:560}
+/* Encabezado: logo a la izquierda, íconos sin fondo a la derecha, título con aire */
+.cab.est .hrow{display:flex;align-items:center;justify-content:space-between}
+.cab.est .hizq{display:flex;align-items:center;gap:4px}
+.cab.est .logo{width:40px;height:40px;display:block}
+.cab.est .volver{width:48px;height:48px;background:none!important;border-radius:24px}
+.cab.est .btn-cab,.cab.est .portal{width:48px;height:48px;border-radius:24px;background:none!important;color:var(--tinta);display:flex;align-items:center;justify-content:center;border:0;transition:transform 150ms var(--m3),background 350ms var(--m3)}
+.cab.est .portal svg{width:24px;height:24px}
+.cab.est .btn-cab:active,.cab.est .portal:active,.cab.est .volver:active{transform:scale(.97);background:var(--alta)!important}
+.cab.est h1{margin-top:36px;font-weight:860}
+.cab.est .buscar{background:var(--alta)}
+.estado-fila .hora{background:var(--alta)}
+/* Títulos de sección negros y más grandes */
+.seccion,.secc,.fecha-sec{font-size:20px;line-height:28px;font-weight:660;color:var(--tinta);margin:22px 8px 10px}
+.seccion small{font-size:15px;font-weight:560;color:var(--sec,#45343A)}
+/* Cifras de arriba como accesos directos: neutros, el filtro elegido en rosa; el color del estado solo en el círculo */
+.cifra,.cifra.bajo,.cifra.agot,.cifra.pend,.cifra:not(.bajo):not(.agot):not(.pend){background:var(--alta);border-radius:24px;outline:0}
+.cifra b,.cifra span,.cifra.bajo span,.cifra.agot span,.cifra.pend b,.cifra.pend span,.cifra:not(.bajo):not(.agot):not(.pend) b,.cifra:not(.bajo):not(.agot):not(.pend) span{color:var(--tinta)}
+.cifra span span{color:var(--sec,#45343A);font-weight:560}
+.cifra .ic,.cifra:not(.bajo):not(.agot):not(.pend) .ic{background:#FFCCD4;color:#84303F;border-radius:50%}
+.cifra.bajo .ic{background:#FFF3DC;color:#7A4A00}
+.cifra.agot .ic{background:#FCE4E1;color:#B3261E}
+.cifra[aria-pressed="true"]{background:#FFCCD4!important}
+.cifra[aria-pressed="true"] b,.cifra[aria-pressed="true"] span{color:#33030F!important}
+.cifra[aria-pressed="true"] .ic{background:#84303F!important;color:#fff!important}
+.cifra.agot.latiendo{animation:latidoCifra 2.4s ease-in-out infinite}
+@keyframes latidoCifra{50%{background:#FCE4E1}}
+@media (prefers-reduced-motion:reduce){.cifra.agot.latiendo,.cifra.agot.latiendo .ic{animation:none}}
+.cifra.agot.latiendo .ic{animation:latidoIc 2.4s ease-in-out infinite}
+@keyframes latidoIc{50%{background:#F6C6C0;box-shadow:0 0 0 5px rgba(179,38,30,.12)}}
+/* Filas de artículos en grupos, neutras; bajo mínimo en ámbar; agotado en rojo que late */
+.art{background:var(--tarjeta);box-shadow:none;border:0;border-radius:24px}
+.art+.art{border-top-left-radius:6px;border-top-right-radius:6px}
+.art:has(+.art){border-bottom-left-radius:6px;border-bottom-right-radius:6px}
+.art.e-bajo{background:#FFF3DC}
+.foto-mini{width:48px;height:48px;border-radius:14px;background:var(--alta)}
+.art.e-bajo .foto-mini{background:rgba(255,255,255,.6)}
+.art .nom{font-size:17px;font-weight:660}
+@media (hover:hover){.art:hover{background:#EEE6E7;box-shadow:none}.art.e-bajo:hover{background:#FCEACB}}
+/* Pendientes e historial */
+.hist,.tk{background:var(--tarjeta)}
+.hist .ico{border-radius:14px!important;width:48px!important;height:48px!important}
+/* Barra inferior y riel neutros */
+.nav{background:var(--barra)}
+/* Retiro / Devolución / Ingreso y técnicos como fichas */
+.segmento{display:flex;flex-wrap:wrap;gap:8px;background:transparent;padding:0;border-radius:0}
+.segmento button{flex:none;min-height:44px;border:1px solid #D3B8BC;border-radius:12px;background:transparent;padding:0 16px}
+.segmento button[aria-checked="true"]{background:#FFCCD4;border-color:#FFCCD4;color:#33030F}
+.opcion{border-radius:12px;background:transparent;border:1px solid #D3B8BC}
+.opcion[aria-pressed="true"],.opcion[aria-checked="true"]{border-color:#FFCCD4}
+.inp,.num{background:var(--alta);border:1px solid transparent}
+.inp:focus,.num:focus{border-color:#84303F}
+.agregar,.paso[data-d="1"],.foto-grande.con .acciones button.btn{background:var(--alta);color:var(--tinta)}
+button:active:not(:disabled){transform:scale(.97)}
 </style>
 </head>
 <body>
