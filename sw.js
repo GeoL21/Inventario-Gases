@@ -9,7 +9,7 @@
  * VERSION para que los celulares renueven la copia.
  *****************************************************************/
 
-const VERSION = 'inv-gases-v19';
+const VERSION = 'inv-gases-v20';
 
 const ARCHIVOS = [
   './',
@@ -28,7 +28,7 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(VERSION)
       .then(function(cache) {
-        return cache.addAll(ARCHIVOS).then(function() {
+        return cache.addAll(ARCHIVOS.map(function(u) { return new Request(u, { cache: 'reload' }); })).then(function() {
           // La letra es opcional: si falta, la app usa la del celular
           return cache.add('PlusJakartaSans.ttf').catch(function() {});
         });
@@ -63,7 +63,7 @@ self.addEventListener('fetch', function(event) {
   event.respondWith(
     caches.open(VERSION).then(function(cache) {
 
-      const deLaRed = fetch(peticion).then(function(respuesta) {
+      const deLaRed = fetch(peticion, { cache: 'no-cache' }).then(function(respuesta) {
         if (respuesta && respuesta.ok) {
           cache.put(peticion, respuesta.clone());
         }

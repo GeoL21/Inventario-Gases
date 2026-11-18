@@ -1784,8 +1784,18 @@ async function iniciar() {
 }
 
 if ('serviceWorker' in navigator) {
+  // Aviso de versión nueva: se revisa al volver a abrir la app
+  const habiaSW = !!navigator.serviceWorker.controller;
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('sw.js').catch(function() { /* sin modo sin señal */ });
+    navigator.serviceWorker.register('sw.js').then(function(reg) {
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') reg.update().catch(function() {});
+      });
+    }).catch(function() { /* sin modo sin señal */ });
+  });
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    const e = document.getElementById('nuevaVer');
+    if (habiaSW && e) e.classList.add('on');
   });
 }
 
